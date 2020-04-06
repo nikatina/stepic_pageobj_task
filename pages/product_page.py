@@ -36,7 +36,6 @@ class ProductPage(BasePage):
     def compare_prices(self):
         book_price = self.browser.find_element(*ProductPageLocators.BOOK_PRICE)
         total_mes_in_basket = self.browser.find_element(*ProductPageLocators.TOTAL_BASKET)
-        #print(total_mes_in_basket.text)
         total_price_in_basket = total_mes_in_basket.text.split(" ")[-3]
         bp = book_price.text.split(" ")[0]
         assert bp == total_price_in_basket, f"Prices is difference '{bp}' != '{total_price_in_basket}'"
