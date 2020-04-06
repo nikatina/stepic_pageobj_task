@@ -17,19 +17,55 @@ import time
                                   "http://selenium1py.pythonanywhere.com/catalogue/coders-at-work_207/?promo=offer9"])
 '''
 
-link = "http://selenium1py.pythonanywhere.com/"
+link = "http://selenium1py.pythonanywhere.com/catalogue/"
+
+
+@pytest.mark.user
+class TestUserAddToBasketFromProductPage():
+    @pytest.fixture(scope="function", autouse=True)
+    def setup(self, browser):
+        # открыть страницу регистрации
+        login_page = LoginPage(browser, link)
+        login_page.open()
+        login_page.go_to_login_page()
+        # зарегистрировать нового пользователя
+        login_page.register_new_user(str(time.time()) + "@fakemail.org", str(time.time())[0:10])
+        # проверить, что пользователь залогинен
+        login_page.should_be_authorized_user()
+
+    def test_user_can_add_product_to_basket(self, browser):
+        page = ProductPage(browser,
+                           "http://selenium1py.pythonanywhere.com/ru/catalogue/the-shellcoders-handbook_209/")  # инициализируем Page Object, передаем в конструктор экземпляр драйвера и url адрес
+        page.open()  # открываем страницу
+        page.should_not_be_success_message()
+        page.click_add_good_to_basket_btn()  # выполняем метод страницы -
+        #page.send_answer_and_accept_prompt()
+        page.compare_book_titles()
+        page.compare_prices()
+
+    def test_user_cant_see_success_message(self, browser):
+        page = ProductPage(browser, link)
+        page.open()
+        page.should_not_be_success_message()
 
 @pytest.mark.skip
-def test_guest_can_add_product_to_basket(browser):
-    page = ProductPage(browser, link)  # инициализируем Page Object, передаем в конструктор экземпляр драйвера и url адрес
-    page.open()  # открываем страницу
-    page.should_not_be_success_message()
-    page.click_add_good_to_basket_btn()  # выполняем метод страницы -
-    page.send_answer_and_accept_prompt()
-    page.compare_book_titles()
-    page.compare_prices()
+class TestGuestAddToBasketFromProductPage():
+    def test_guest_cant_see_success_message(self, browser):
+        page = ProductPage(browser, link)
+        page.open()
+        page.should_not_be_success_message()
 
-@pytest.mark.xfail
+    def test_guest_can_add_product_to_basket(self, browser):
+        page = ProductPage(browser,
+                           link)  # инициализируем Page Object, передаем в конструктор экземпляр драйвера и url адрес
+        page.open()  # открываем страницу
+        page.should_not_be_success_message()
+        page.click_add_good_to_basket_btn()  # выполняем метод страницы -
+        page.send_answer_and_accept_prompt()
+        page.compare_book_titles()
+        page.compare_prices()
+
+
 def test_guest_cant_see_success_message_after_adding_product_to_basket(browser):
     page = ProductPage(browser, link)
     page.open()
@@ -37,11 +73,6 @@ def test_guest_cant_see_success_message_after_adding_product_to_basket(browser):
     page.send_answer_and_accept_prompt()
     page.should_not_be_success_message()
 
-
-def test_guest_cant_see_success_message(browser):
-    page = ProductPage(browser, link)
-    page.open()
-    page.should_not_be_success_message()
 
 @pytest.mark.xfail
 def test_message_disappeared_after_adding_product_to_basket(browser):
